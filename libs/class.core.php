@@ -63,6 +63,10 @@ abstract	class	Core	extends	stdClass
 	public	function	__set_state(){}
 	public	function	__clone(){}
 
+	/**
+	 * 在實體化成物件前的一些準備工作
+	 * @return Core
+	 */
 	protected	function	&BeforeConstruct()
 	{
 		$this->Debug["start"]["time"] = $this->GetTime();
@@ -72,7 +76,25 @@ abstract	class	Core	extends	stdClass
 		return	$this;
 	}
 
-	protected	function	GetTime( $mixTime = NULL )
+	/**
+	 * 取得各樣時間的數值
+	 * @param	Ambigous <integer, array>
+	 * @return	array <br/>
+	 * second 秒(0-59)<br/>
+	 * minutes	分(0-59)<br/>
+	 * hours	時(0-23)<br/>
+	 * mday	一個月的第幾天<br/>
+	 * wday	一週中的第幾天<br/>
+	 * mon	一年中第幾月<br/>
+	 * year	西元年，四碼<br/>
+	 * yday	一年中第幾天<br/>
+	 * weekday	今天星期幾文(英文)<br/>
+	 * month	幾月(英文字)<br/>
+	 * umtime	unix timestamp with microsecond<br/>
+	 * utime	unix timestamp without microsecond<br/>
+	 * msec		微秒
+	 */
+	static	protected	function	GetTime( $mixTime = NULL )
 	{
 		$aryReturn = array();
 		if( is_null( $mixTime ) )
@@ -94,22 +116,54 @@ abstract	class	Core	extends	stdClass
 			$intTime = strtotime( $mixTime );
 		}
 		$aryReturn = getdate( $intTime );
-		$aryReturn["microsec"] = $intTime + $fltTime;
+		$aryReturn["umtime"] = $intTime + $fltTime;
+		$aryReturn["utime"] = $aryReturn[0];
 		$aryReturn["msec"] = $fltTime;
+		unset( $aryReturn[0] );
 		return	$aryReturn;
+	}
+
+	/**
+	 * 設定時間追踪
+	 * @return Core
+	 */
+	protected	function	&SetTimeTrace()
+	{
+		if( $this->Debug["flag"] )
+		{
+			$aryTime = $this->GetTime();
+			$this->Debug["timestamp"][$aryTime["umtime"]] = $aryTime;
+		}
+		return	$this;
+	}
+
+	protected	function	&SetMemTrace()
+	{
+		if( $this->Debug["flag"] )
+		{
+			$aryTime = $this->GetTime();
+			$this->Debug["mem"][$aryTime["umtime"]] = memory_get_usage();
+		}
+		return	$this;
 	}
 
 	protected	function	&SetSQLTrace( $strFile , $intLine , $strSQL )
 	{
-		$aryTime = $this->GetTime();
-		$this->Debug["sql"][$strFile][$intLine][$aryTime["microsec"]] = $strSQL;
+		if( $this->Debug["flag"] )
+		{
+			$aryTime = $this->GetTime();
+		}
+		$this->Debug["sql"][$strFile][$intLine][$aryTime["umtime"]] = $strSQL;
 		return	$this;
 	}
 
-	protected	function	SetMessage( $strFile , $intLine , $strMessage )
+	protected	function	&SetMessage( $strFile , $intLine , $strMessage )
 	{
-		$aryTime = $this->GetTime();
-		$this->Debug["msg"][$strFile][$intLine][$aryTime["microsec"]] = $strSQL;
+		if( $this->Debug["flag"] )
+		{
+			$aryTime = $this->GetTime();
+			$this->Debug["msg"][$strFile][$intLine][$aryTime["umtime"]] = $strSQL;
+		}
 		return	$this;
 	}
 
