@@ -124,7 +124,7 @@ abstract	class	Core	extends	stdClass
 	}
 
 	/**
-	 * 設定時間追踪
+	 * 設定時間追蹤
 	 * @return Core
 	 */
 	protected	function	&SetTimeTrace()
@@ -137,6 +137,10 @@ abstract	class	Core	extends	stdClass
 		return	$this;
 	}
 
+	/**
+	 * 設定記憶體使用的追蹤
+	 * @return Core
+	 */
 	protected	function	&SetMemTrace()
 	{
 		if( $this->Debug["flag"] )
@@ -147,6 +151,13 @@ abstract	class	Core	extends	stdClass
 		return	$this;
 	}
 
+	/**
+	 * 設定SQL指令使用追蹤
+	 * @param	string	$strFile	SQL指令所在的檔案位置
+	 * @param	integer	$intLine	SQL指令在上述檔案位置的行數
+	 * @param	string	$strSQL	SQL指令
+	 * @return Core
+	 */
 	protected	function	&SetSQLTrace( $strFile , $intLine , $strSQL )
 	{
 		if( $this->Debug["flag"] )
@@ -157,6 +168,13 @@ abstract	class	Core	extends	stdClass
 		return	$this;
 	}
 
+	/**
+	 * 設定信息追蹤
+	 * @param	string	$strFile	信息記錄的檔案位置
+	 * @param	integer	$intLine	信息記錄所在的行數
+	 * @param	string	$strMessage	信息內容
+	 * @return Core
+	 */
 	protected	function	&SetMessage( $strFile , $intLine , $strMessage )
 	{
 		if( $this->Debug["flag"] )
@@ -205,6 +223,12 @@ abstract	class	Core	extends	stdClass
 		return	$this;
 	}
 
+	//@TODO:
+	protected	function	ExecuteSQL()
+	{
+		$aryParams = func_get_args();
+	}
+
 	protected	function	&InitLang( $strLang = NULL )
 	{
 		parent::InitLang( $strLang );
@@ -230,16 +254,35 @@ abstract	class	Core	extends	stdClass
 		return	$this;
 	}
 
-	protected	function	GetLang( $strCode , $strLang = NULL )
+	protected	function	GetLang( $strCode , $aryParams = array() , $strLang = NULL )
 	{
 		if( is_null( $strLang ) )
 		{
 			$strLang = $this->_APPF["LANG"];
 		}
+		if( ! $strLang )
+		{
+			$strLang = "en_US";
+		}
 		//如果引入的語言碼與
-		if( ! isset( $_LANG[$strCode] ) || $strLang != $this->_APPF["LANG"] )
+		if( ! isset( $this->_LANG[$strCode] ) || $strLang != $this->_APPF["LANG"] )
 		{
 			$this->InitLang( $strLang );
+		}
+		if( is_array( $aryParams ) && count( $aryParams ) > 0 )
+		{
+			$arySource = array();
+			$aryTarget = array();
+			krsort( $aryParams );
+			foreach( $aryParams AS $strSource => $mixTarget )
+			{
+				$arySource[] = "/\{" . addslashes( strtoupper( $strSource ) ) . "\}/i";
+				$aryTarget[] = $mixTarget;
+			}
+			return	preg_replace( $arySource , $aryTarget , $this->_LANG[$strLang][$strCode] );
+		}else
+		{
+			return	$this->_LANG[$strLang][$strCode];
 		}
 	}
 

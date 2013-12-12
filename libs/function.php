@@ -1,6 +1,12 @@
 <?php
 $GLOBALS["strThisDir"] = dirname( __FILE__ );
 //A|a
+function	nl2br( $strInput )
+{
+	$arySrc = array( '/\n\r\<br\/?\>/i' , '/\n\<br\/\>/i' , '/\r\<br\/\>/' , '/\<br\/\>/i' , '/\n\r/' , '/\n/' , '/\r/' );
+	$aryTar = array( '<br/>' , '<br/>' , '<br/>' , '<br/>' , '<br/>' , '<br/>' , '<br/>' );
+	return	preg_replace( $arySrc , $aryTar , $strInput );
+}
 /**
  * 取得陣列的最後一個元素
  * @param	array	$aryArray	要取得的來源陣列
@@ -460,11 +466,11 @@ function	strGetGenURL( $aryParams )
 			$aryReturnTemp[] = serialize( $mixV );
 			continue;
 		}
-		$aryReturnTemp[] = "{$strK}:" . 
-			$this->strGetBase10ToBase64( mt_rand( 0 , 63 ) ). 
+		$aryReturnTemp[] = "{$strK}:" .
+			$this->strGetBase10ToBase64( mt_rand( 0 , 63 ) ).
 			$this->strGetBase10ToBase64( mt_rand( 0 , 63 ) );
-		$aryReturnTemp[] = "{$mixV}:" . 
-			$this->strGetBase10ToBase64( mt_rand( 0 , 63 ) ). 
+		$aryReturnTemp[] = "{$mixV}:" .
+			$this->strGetBase10ToBase64( mt_rand( 0 , 63 ) ).
 			$this->strGetBase10ToBase64( mt_rand( 0 , 63 ) );
 	}
 	return	"/" . implode( "/" , $aryReturnTemp ) . "/{$strBaseName}";
