@@ -7,6 +7,13 @@ function	nl2br( $strInput )
 	$aryTar = array( '<br/>' , '<br/>' , '<br/>' , '<br/>' , '<br/>' , '<br/>' , '<br/>' );
 	return	preg_replace( $arySrc , $aryTar , $strInput );
 }
+function	addRegExpSlashes( $strInput )
+{
+	$strInput = addslashes( $strInput );
+	$strPattern = '/([\,\[\]\{\}\|\?\.\*\+\<\>\,\(\)]\^\$])/';
+	$strOutput = preg_replace( $strPattern , '\$1' , $strInput );
+	return	$strOutput;
+}
 /**
  * 取得陣列的最後一個元素
  * @param	array	$aryArray	要取得的來源陣列

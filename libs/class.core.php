@@ -4,6 +4,19 @@ include( 'function.php' );
 include( "{$_APPF["DIR_3RD_PARTY"] }/adodb/adodb.inc.php" );
 include( "{$_APPF["DIR_3RD_PARTY"] }/smarty/Smarty.class.php" );
 
+/**
+ * @var	integer(bitwise)	依「頁」取得資料(如：第3頁的資料)
+ */
+define( "SQL_FETCH_BY_PAGE" , pow( 2 , 0 ) );
+/**
+ * @var	integer(bitwise)	依指定區間來取得資料
+ */
+define( "SQL_FETCH_BY_ZONE" , pow( 2 , 1 ) );
+/**
+ * @var	integer(bitwise)	依指定起始位置來取得資料
+ */
+define( "SQL_FETCH_BY_ORIGINAL" , pow( 2 , 2 ) );
+
 abstract	class	Core	extends	stdClass
 {
 	/**
@@ -13,6 +26,7 @@ abstract	class	Core	extends	stdClass
 	protected	$Cache = array();
 	protected	$Debug = array(
 		"sql" => array() ,
+		"sql_history" => array() ,
 		"msg"	=> array() ,
 		"timestamp" => array() ,
 		"last"	=>	array(
@@ -223,10 +237,122 @@ abstract	class	Core	extends	stdClass
 		return	$this;
 	}
 
+	protected	function	DBInited( $bolForceInited = true )
+	{
+		$strDBClass = get_class( $this->DB );
+		if( ! preg_match( '/^adodb\_/i' , $strDBClass ) )
+		{
+			if( $bolForceInited )
+			{
+				$this->InitDB();
+			}else
+			{
+				return	false;
+			}
+		}
+		return	true;
+	}
+
 	//@TODO:
 	protected	function	ExecuteSQL()
 	{
 		$aryParams = func_get_args();
+		$i = 0;
+		if( preg_match( '/^[0-9]+$/' , $aryParams[0]  ) )
+		{
+			$intCacheTime = $aryParams[$i++];
+			$strSQL = $aryParams[$i++];
+			$intFetchMode = $aryParams[$i++];
+			$intCountStart = $aryParams[$i++];
+			$intPageOffsetEnd = $aryParams[$i++];
+			$mixParam = $aryParams[$i++];
+		}else
+		{
+			$strSQL = $aryParams[$i++];
+			$intFetchMode = $aryParams[$i++];
+			$intCountStart = $aryParams[$i++];
+			$intPageOffsetEnd = $aryParams[$i++];
+			$mixParam = $aryParams[$i++];
+		}
+		//處理SQL加參數的問題:START
+		if( preg_match( '/\{\$[_a-z0-9]+\}/i' , $strSQL ) )
+		{
+			if( is_array( $mixParam ) )
+			{
+				$aryParam = $mixParam;
+			}else
+			{
+				if( isset( $mixParam ) )
+				{
+					$aryParam[] = $mixParam;
+				}
+			}
+			$this->DBInited( true );
+			krsort( $aryParam );
+			if( $mixParam )
+			{
+				foreach( $aryParam AS $mixK => $mixV )
+				{
+					$strSQL = preg_replace( '/' . addRegExpSlashes( $mixK ) . '/' , $mixV , $strSQL );
+				}
+			}
+		}
+		//處理SQL加參數的問題:END
+		//是否使用CACHE:START
+		$strPreMethod = "";
+		if( $intCacheTime > 0 )
+		{
+			$strPreMethod = "Cache";
+		}
+		//是否使用CACHE:END
+		//決定使用取得資料的方法:START
+		if( $intCountStart > 0 )
+		{
+			if( 0 < ( $intFetchMode & SQL_FETCH_BY_PAGE ) )
+			{
+				$strMethod = "{$strPreMethod}PageExecute";
+			}elseif( 0 < ( $intFetchMode & SQL_FETCH_BY_ZONE ) )
+			{
+				//將ZONE改成ORIGINAL:START
+				$strMethod = "{$strPreMethod}SelectLimit";
+				$intTempStart = $intCountStart;
+				$intCountStart = ( $intPageOffsetEnd - $intCountStart ) + 1;
+				$intPageOffsetEnd = $intCountStart - 1;
+				//將ZONE改成ORIGINAL:END
+			}else
+			{
+				$strMethod = "{$strPreMethod}SelectLimit";
+			}
+		}else
+		{
+			$strMethod = "{$strPreMethod}Execute";
+		}
+		//決定使用取得資料的方法:END
+		try
+		{
+			$aryTime = $this->GetTime();
+			$strNow = date( "Y-m-d H:i:" , $aryTime["utime"] ) . ":" . ( date( "s" , $aryTime["utime"] ) + $aryTime["msec"] );
+			$this->Debug["sql_history"][$strNow] = $strSQL;
+			$objResult = new	stdClass();
+			if( $intCountStart > 0 )
+			{
+				if( $intCacheTime > 0 )
+				{
+					$objResult = $this->DB->{$strMethod}( $intCacheTime , $strSQL , $intCountStart , $intPageOffsetEnd );
+				}else
+				{
+					$objResult = $this->DB->{$strMethod}( $strSQL , $intCountStart , $intPageOffsetEnd );
+				}
+			}else
+			{
+				$objResult = $this->DB->{$strMethod}( $strSQL );
+			}
+		}catch( ADODB_Exception $objE )
+		{
+			$this->SetMessage( __FILE__ , __LINE__ , $this->GetLang( "ERROR_FOR_SQL_EXECUTE" , array( "REASON" => $objE->getMessage() , "SQL" => $strSQL ) ) );
+			return	false;
+		}
+		return	$objResult;
 	}
 
 	protected	function	&InitLang( $strLang = NULL )
