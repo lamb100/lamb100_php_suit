@@ -1,17 +1,39 @@
 <?php
 $GLOBALS["strThisDir"] = dirname( __FILE__ );
 //A|a
+/**
+ * 將換行符號換成&lt;br/&gt;
+ * @param	string	$strInput	轉換前的文字
+ * @return	string;
+ */
 function	nl2br( $strInput )
 {
 	$arySrc = array( '/\n\r\<br\/?\>/i' , '/\n\<br\/\>/i' , '/\r\<br\/\>/' , '/\<br\/\>/i' , '/\n\r/' , '/\n/' , '/\r/' );
 	$aryTar = array( '<br/>' , '<br/>' , '<br/>' , '<br/>' , '<br/>' , '<br/>' , '<br/>' );
 	return	preg_replace( $arySrc , $aryTar , $strInput );
 }
+/**
+ * 給Regular Expression的addslashes
+ * @param	string	$strInput	轉換前的文字
+ * @return	string
+ */
 function	addRegExpSlashes( $strInput )
 {
 	$strInput = addslashes( $strInput );
 	$strPattern = '/([\,\[\]\{\}\|\?\.\*\+\<\>\,\(\)]\^\$])/';
 	$strOutput = preg_replace( $strPattern , '\$1' , $strInput );
+	return	$strOutput;
+}
+/**
+ * 給Regular Expression的stripslashes
+ * @param	string	$strInput	轉換前的文字
+ * @return	string
+ */
+function	stripRegExpSlashes( $strInput )
+{
+	$strPattern = '/\\([\,\[\]\{\}\|\?\.\*\+\<\>\,\(\)]\^\$])/';
+	$strOutput = preg_replace( $strPattern , '$1' , $strInput );
+	$strOutput = stripslashes( $strOutput );
 	return	$strOutput;
 }
 /**
