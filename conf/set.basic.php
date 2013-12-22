@@ -20,7 +20,9 @@ $_APPF["WEB_CSS"] = ( "{$_APPF["WEB_ROOT"]}/css" );
 $_APPF["WEB_IMAGE"] = ( "{$_APPF["WEB_ROOT"]}/image" );
 $_APPF["WEB_MEDIA"] = ( "{$_APPF["WEB_ROOT"]}/media" );
 $_APPF["WEB_UPLOAD"] = ( "{$_APPF["WEB_ROOT"]}/upload" );
+$_APPF["USE_MULTILANG"] = false;
 $_APPF["LANG"] = 'zh_TW';
+$_APPF["DEFAULT_LANG"] = 'en_US';
 /*Template System*/
 $_APPF["DIR_TPL_LIB"] = "{$_APPF["DIR_3RD_PARTY"]}/smarty/Smarty.class.php";
 $_APPF["DIR_TPL"] = realpath( "{$_APPF["DIR_ROOT"]}/template" );

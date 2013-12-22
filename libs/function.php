@@ -504,4 +504,40 @@ function	strGetGenURL( $aryParams )
 	}
 	return	"/" . implode( "/" , $aryReturnTemp ) . "/{$strBaseName}";
 }
+/**
+ * 將駝峰式命名轉成底線式命名
+ * @param string $strInput 要轉換輸入用的字句
+ * @return string
+ */
+function	CamelCase2UnderLine( $strInput )
+{
+	$aryExplode = explode( "_" , $strInput );
+	$aryPreimport = array();
+	foreach( $aryExplode AS $strTemp )
+	{
+		$aryPreimport[] = ucfirst( strtolower( $strTemp ) );
+	}
+	return	implode(  "" , $aryPreimport );
+}
+
+/**
+ * 將底線式命名轉換成駝峰式命名
+ * @param string $strInput 要轉換輸入用的字句
+ * @return string
+ */
+function	UnderLine2CamelCase( $strInput )
+{
+	if( preg_match_all( '/^([A-Z0-9][a-z0-9]*)+$/' , $strInput , $aryReg ) )
+	{
+		$aryReturn = array();
+		foreach( $aryReg AS $strPreimplode )
+		{
+			$aryReturn[] = strtolower( $strPreimplode );
+		}
+		return	implode( "_" , $aryReturn );
+	}else
+	{
+		return	$strInput;
+	}
+}
 ?>

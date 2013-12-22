@@ -87,6 +87,13 @@ abstract	class	Core	extends	stdClass
 		$this->Debug["start"]["mem"] = memory_get_usage();
 		global	$_APPF;
 		$this->_APPF = &$_APPF;
+		if( $this->_APPF["USE_MULTILANG"] )
+		{
+			$this->InitLang( $this->_APPF["LANG"] );
+		}else
+		{
+			$this->InitLang( $this->_APPF["DEFAULT_LANG"] );
+		}
 		return	$this;
 	}
 
@@ -198,7 +205,16 @@ abstract	class	Core	extends	stdClass
 		}
 		return	$this;
 	}
-
+	/**
+	 * 初始化DB物件
+	 * @param string $strDBType 資料庫的類別(如:mysql/postgresql...)
+	 * @param string $strDBHost 資料庫主機所在的位置
+	 * @param string $strDBName 資料庫名稱
+	 * @param string $strDBUser 資料庫使用者名稱
+	 * @param string $strDBPass 資料庫使用者密碼
+	 * @param string $intDBPort 資料庫所使用的網路埠號
+	 * @return Core
+	 */
 	public	function	&InitDB( $strDBType = NULL , $strDBHost = NULL , $strDBName = NULL , $strDBUser = NULL , $strDBPass = NULL , $intDBPort = NULL )
 	{
 		$_APPF = $this->_APPF;
@@ -236,7 +252,11 @@ abstract	class	Core	extends	stdClass
 		}
 		return	$this;
 	}
-
+	/**
+	 * 判斷DB的物件是否被初始化過
+	 * @param string $bolForceInited 若沒有被初始化，是否強迫初始化(一律return true)
+	 * @return boolean	true:已初始化/false:未初始化
+	 */
 	protected	function	DBInited( $bolForceInited = true )
 	{
 		$strDBClass = get_class( $this->DB );
@@ -252,8 +272,16 @@ abstract	class	Core	extends	stdClass
 		}
 		return	true;
 	}
-
-	//@TODO:
+	/**
+	 * 執行SQL
+	 * @param integer $intCacheTime 快取時間(optional)
+	 * @param string $strSQL 要執行的SQL指令
+	 * @param integer $intFetchMode 取得資料的模式(SQL_FETCH_BY_PAGE|SQL_FETCH_BY_ZONE|SQL_FETCH_BY_ORIGINAL)
+	 * @param integer $intCountStart 取得資料的數量(When $intFetchMode in array( SQL_FETCH_BY_PAGE , SQL_FETCH_BY_ORIGINAL ))<br/>/取得資料的開始位置(When $intFetchMode == SQL_FETCH_BY_ZONE)
+	 * @param integer $intPageOffsetEnd (SQL_FETCH_BY_PAGE:取得資料所在頁數/SQL_FETCH_BY_ZONE:取得資料的結束位置/SQL_FETCH_BY_ORIGINAL:取得資料的起始位置)
+	 * @param mixParam $mixParam SQL中的參數
+	 * @return boolean|stdClass|ADODBRecordset_XXX
+	 */
 	protected	function	ExecuteSQL()
 	{
 		$aryParams = func_get_args();
@@ -354,7 +382,11 @@ abstract	class	Core	extends	stdClass
 		}
 		return	$objResult;
 	}
-
+	/**
+	 * 初始化語言物件
+	 * @param string $strLang 要採用的語言別
+	 * @return Core
+	 */
 	protected	function	&InitLang( $strLang = NULL )
 	{
 		parent::InitLang( $strLang );
@@ -379,7 +411,13 @@ abstract	class	Core	extends	stdClass
 		}
 		return	$this;
 	}
-
+	/**
+	 * 取得詞系的字句
+	 * @param string $strCode 取得多國語系的編碼
+	 * @param array $aryParams 要置換的參數
+	 * @param string $strLang 指定要取得的語系
+	 * return string
+	 */
 	protected	function	GetLang( $strCode , $aryParams = array() , $strLang = NULL )
 	{
 		if( is_null( $strLang ) )
@@ -409,32 +447,6 @@ abstract	class	Core	extends	stdClass
 		}else
 		{
 			return	$this->_LANG[$strLang][$strCode];
-		}
-	}
-
-	static	public	function	CamelCase2UnderLine( $strInput )
-	{
-		$aryExplode = explode( "_" , $strInput );
-		$aryPreimport = array();
-		foreach( $aryExplode AS $strTemp )
-		{
-			$aryPreimport[] = ucfirst( strtolower( $strTemp ) );
-		}
-		return	implode(  "" , $aryPreimport );
-	}
-	static	public	function	UnderLine2CamelCase( $strInput )
-	{
-		if( preg_match_all( '/^([A-Z0-9][a-z0-9]*)+$/' , $strInput , $aryReg ) )
-		{
-			$aryReturn = array();
-			foreach( $aryReg AS $strPreimplode )
-			{
-				$aryReturn[] = strtolower( $strPreimplode );
-			}
-			return	implode( "_" , $aryReturn );
-		}else
-		{
-			return	$strInput;
 		}
 	}
 }

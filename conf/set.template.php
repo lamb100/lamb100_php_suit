@@ -20,6 +20,7 @@
 // $_APPF["WEB_IMAGE"] = ( "{$_APPF["WEB_ROOT"]}/image" );
 // $_APPF["WEB_MEDIA"] = ( "{$_APPF["WEB_ROOT"]}/media" );
 // $_APPF["WEB_UPLOAD"] = ( "{$_APPF["WEB_ROOT"]}/upload" );
+// $_APPF["USE_MULTILANG"] = false;
 // $_APPF["LANG"] = 'zh_TW';
 // /*Template System*/
 // $_APPF["DIR_TPL_LIB"] = "{$_APPF["DIR_3RD_PARTY"]}/smarty/Smarty.class.php";
@@ -35,4 +36,3 @@
 // $_APPF["DB_PORT"] = 54321;
 // /*MAILER*/
 // $_APPF["DIR_MAILER_LIB"] = "";
-?>
